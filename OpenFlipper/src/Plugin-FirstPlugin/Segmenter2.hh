@@ -1,3 +1,18 @@
+/*
+ * =====================================================================================
+ *
+ *  Filename:  Segmenter2.hh
+ *
+ *	Description: Contains:
+ *					MeshSegmentT<>: Template class describing an individual segment with name and ID handle.
+ *					MeshSegmentCollectionT<>: per model container for collections of MeshSegmentT<>. Assigns ID numbers
+ *
+ *
+ *   Author:  David Lane
+ *
+ * =====================================================================================
+ */
+
 #ifndef SEGMENTER2_HH
 #define SEGMENTER2_HH
 

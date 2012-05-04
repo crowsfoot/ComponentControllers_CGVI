@@ -1,17 +1,16 @@
 /*
  * =====================================================================================
  *
- *       Filename:  SegmentController.hh
+ *  Filename:  SegmentController.hh
  *
- *    Description:
+ *	Description: An initial attempt at a segment controller class
+ *					Contains test classes for OpenFlipper integrated segmentation and
+ *					the algLib linear algebra library
+ *					***Included for reference only***
+ *					see the family of Segmenter2 files.
  *
- *        Version:  1.0
- *        Created:  26/04/12 09:33:18
- *       Revision:  none
- *       Compiler:  gcc
  *
- *         Author:  YOUR NAME (),
- *   Organization:
+ *   Author:  David Lane
  *
  * =====================================================================================
  */

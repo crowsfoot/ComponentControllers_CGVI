@@ -1,3 +1,18 @@
+/*
+ * =====================================================================================
+ *
+ *  Filename:  Segmenter2IO.hh
+ *
+ *	Description: Implementation of OpenMesh property IO capability within Segmenter2
+ *	
+ *
+ *   Author:  David Lane
+ *
+ * =====================================================================================
+ */
+
+
+
 #ifndef SEGMENTCONTROLLERIO_HH
 	#define SEGMENTCONTROLLERIO_HH
 
