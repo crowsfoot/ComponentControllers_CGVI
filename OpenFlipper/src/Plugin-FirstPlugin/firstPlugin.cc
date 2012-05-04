@@ -16,7 +16,7 @@ FirstPlugin::FirstPlugin() :  labelStaticText_(0), labelDynamicText_(0),
 {
 }
 
-
+//Load the QT form elements
 void FirstPlugin::initializePlugin(){
 
   //create widgets
@@ -49,12 +49,15 @@ void FirstPlugin::initializePlugin(){
   emit addToolbox(tr("FirstPlugin"),toolBox_);
 }
 
+
+//link any signals to scriptable slots on external plugins
 void FirstPlugin::pluginsInitialized(){
     log(QString("Linking script calls"));
     crossPluginConnect(QString("firstplugin"),SIGNAL(doClearTargets()),QString("primitivesgeneratorplugin"),SLOT(addSphere()));
     
 }
 
+//updates the toolbox on the selected verties
 void FirstPlugin::CountTargetObjects(){
   PluginFunctions::ObjectIterator o_it(PluginFunctions::TARGET_OBJECTS);
 
@@ -71,6 +74,7 @@ void FirstPlugin::CountTargetObjects(){
   labelDynamicText_->setText(QString("%1 Meshes Out Of %2 Objects").arg(countMesh).arg(countTotal));
 }
 
+//counts the number of selected vertices on all target objects and then updates the label on the toolbox
 void FirstPlugin::CountTargetVertices(){
   PluginFunctions::ObjectIterator o_it(PluginFunctions::TARGET_OBJECTS);
 
@@ -123,25 +127,8 @@ void FirstPlugin::click_TestSegmentController(){
       itE = Tmesh->vertices_end();
       for(; itV!=itE; ++itV)
 	      if(Tmesh->status(itV).selected()) vertices.push_back(itV.handle());
-      
-   //   SController<TriMesh> TC;
-   //   TC._VertexHandles = vertices;
-	  //TC._mesh = Tmesh;
-   //   TC.unSelectAll();
-	  ////emit updatedObject(o_it->id(), UPDATE_SELECTION_VERTICES);
-	  ////emit updateView();
-	
-	  //TriMesh::Point a(0,0,0),b(0,0,0);
-	  ////call the openFlipper environment to add an empty mesh objecy
-	  //int _BoundingBoxHandle  = addTriMesh();
-	  ////get the empty mesh objecy
-	  //TriMeshObject* TMO;
-	  //PluginFunctions::getObject(_BoundingBoxHandle, TMO);
-	  //TC._BoundingCube = TMO->mesh();
-	  //TMO->setName( "SegmentController " + QString::number(_BoundingBoxHandle) );
-	  //TC.BuildBoundingBox(a,b);
-	  //emit updatedObject(_BoundingBoxHandle,UPDATE_ALL);
-	  //log(QString("%1, %2, %3, %4,%5,%6").arg(a[0]).arg(a[1]).arg(a[2]).arg(b[0]).arg(b[1]).arg(b[2]));
+      //INSERT SEGMENTER CLASS CODE HERE
+	  
 
     } else {
 		std::vector<typename PolyMesh::VertexHandle> vertices;
@@ -152,19 +139,14 @@ void FirstPlugin::click_TestSegmentController(){
       itE = Pmesh->vertices_end();
       for(; itV!=itE; ++itV)
 	      if(Pmesh->status(itV).selected()) vertices.push_back(itV.handle());
-      
-   //   SController<PolyMesh> PC;
-   //   PC._VertexHandles = vertices;
-	  //PC._mesh = Pmesh;
-	  //
-   //   PC.unSelectAll();
-	  emit updatedObject(o_it->id(), UPDATE_SELECTION_VERTICES);
+		
+
+	  //INSERT SEGMENTER CLASS CODE HERE
+   	  emit updatedObject(o_it->id(), UPDATE_SELECTION_VERTICES);
 	  emit updateView();
     }
   } else {
 	  log(QString("No objects found"));
-	  //SController<TriMesh> a;
-	  //log(QString(a.testAlglib().c_str()));
   }
 }
 
