@@ -1,0 +1,6 @@
+04 May 2012-David Lane
+--------------------------------------------------------
+Initialised repository.
+Added Segmenter2 family of template classes allowing storing and file IO of Segments.
+
+Code now compiles but needs to be tested.
