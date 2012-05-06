@@ -4,3 +4,14 @@ Initialised repository.
 Added Segmenter2 family of template classes allowing storing and file IO of Segments.
 
 Code now compiles but needs to be tested.
+
+06 May 2012- David Lane
+--------------------------------------------------------
+Rewritten to take account of how any sane segmentation will need to store the
+segmentation next to the vertex in addition to centrally.
+Storing the segmentation as a per-vertex property also removes the need for a
+complicated redefinition of OpenMesh::IO::binary<MeshSegmentT<MeshType>>.
+
+Expanded Segmenter2.hh
+Added GUI components to firstPlugin.hh and firstPlugin.cc (still needs
+slot definition and linking)

@@ -27,8 +27,10 @@ signals:
   //logginginterface
   void log(Logtype _type, QString _message);
   void log(QString _message);
+
   //toolboxinterface
   void addToolbox(QString _name,  QWidget* _widget);
+
   //LoadSaveInterface
   void addEmptyObject(DataType _type, int& _id);
 
@@ -56,26 +58,39 @@ private:
 
   QPushButton* buttonTestSegmentController_;
 
+  QComboBox* comboSegments_;
+  QPushButton* buttonSegmentAdd_;
+  QPushButton* buttonSegmentDelete_;
+  QPushButton* buttonSegmentAddVertices_;
+  QPushButton* buttonSegmentRemoveVertices_;
+
+
+  //private functions
   int addTriMesh();
 private slots:
   //baseInterface
   void initializePlugin();
   void pluginsInitialized();
-  // ToolboxInterface
 
+  //button clicks
   void CountTargetObjects();
   void CountTargetVertices();
-  //void myClearSelection();
   void ClearTargetsClicked();
 
-  void click_TestSegmentController();
+  void onClick_buttonTestSegmentController();
+  void onClick_buttonSegmentAdd();
+  void onClick_buttonSegmentDelete();
+  void onClick_buttonSegmentAddVertices();
+  void onClick_buttonSegmentRemoveVertices();
 
 public slots:
+	//openFlipper boilerplate
   QString version() {return QString("1.0"); };
 
 
 };
 
+//functor classes used in one of the test buttons built into the plugin
 
 class fNC{
   protected:

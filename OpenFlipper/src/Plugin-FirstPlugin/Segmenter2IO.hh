@@ -12,6 +12,10 @@
  */
 
 
+//ok, this isn't actually useful or necesary
+//store the segmentation with the vertices instead
+//*!* that was silly
+
 
 #ifndef SEGMENTCONTROLLERIO_HH
 	#define SEGMENTCONTROLLERIO_HH
@@ -57,7 +61,7 @@ namespace OpenMesh{
 				bytes += IO::size_of(_v.name_); //get the size of name_
 				bytes += IO::size_of(_v.segmentHandle_); //get the size of segmentHandle
 				//get the size of handles_
-				value_type::VertexHandleVector::const_iterator it = _v.vertexHandles_.begin(); 
+				value_type::VertexHandleContainer::const_iterator it = _v.vertexHandles_.begin(); 
 				for(;it!=_v.vertexHandles_.end(); ++it)
 				{
 					bytes += IO::size_of(*it);	
@@ -72,7 +76,7 @@ namespace OpenMesh{
 				bytes += IO::store(_os,N,_swap);
 				bytes += IO::store(_os,_v.name_,_swap); //get the size of name_
 				bytes += IO::store(_os,_v.segmentHandle_,_swap);//get the size of handle_
-				value_type::VertexHandleVector::const_iterator it = _v.vertexHandles_.begin(); //get the size of vertexHandles_
+				value_type::VertexHandleContainer::const_iterator it = _v.vertexHandles_.begin(); //get the size of vertexHandles_
 				for(;it!=_v.vertexHandles_.end(); ++it)
 				{
 					bytes += IO::store(_os,*it,_swap);	

@@ -18,7 +18,7 @@ FirstPlugin::FirstPlugin() :  labelStaticText_(0), labelDynamicText_(0),
 
 //Load the QT form elements
 void FirstPlugin::initializePlugin(){
-
+	
   //create widgets
  toolBox_ = new QWidget();
 
@@ -29,6 +29,12 @@ void FirstPlugin::initializePlugin(){
   buttonCountTargetVertices_ = new QPushButton("Count &Vertices", toolBox_);
   buttonClearSelection_ = new QPushButton(tr("Clear Selection"), toolBox_);
   buttonTestSegmentController_ = new QPushButton(tr("Test Segment Controller"),toolBox_);
+  buttonSegmentAdd_ = new QPushButton(tr("Add Segment"));
+  buttonSegmentDelete_	= new QPushButton(tr("Delete Segment"));
+  buttonSegmentAddVertices_ = new QPushButton(tr("Add Selected Vertices"));
+  buttonSegmentRemoveVertices_ = new QPushButton(tr("Remove Selected Vertices"));
+
+
 
   layout_ = new QGridLayout(toolBox_);
 
@@ -38,13 +44,20 @@ void FirstPlugin::initializePlugin(){
   layout_->addWidget(buttonCountTargetObjects_,2,1);
   layout_->addWidget(buttonClearSelection_,3,0);
   layout_->addWidget(buttonTestSegmentController_,3,1);
-
+  //
+  //create buttons for segmentation
+  layout_->addWidget(buttonSegmentAdd,5,0);
+  layout_->addWidget(buttonSegmentDelete_,5,1);
+  layout_->addWidget(buttonSegmentAddVertices_,6,0);
+  layout_->addWidget(buttonSegmentRemoveVertices_,6,1);	
   
   //slot the buttons here
   connect(buttonCountTargetObjects_,SIGNAL(clicked()),this, SLOT(CountTargetObjects()));
   connect(buttonCountTargetVertices_,SIGNAL(clicked()),this,SLOT(CountTargetVertices()));
   connect(buttonClearSelection_,SIGNAL(clicked()),this,SLOT(ClearTargetsClicked()));
-  connect(buttonTestSegmentController_,SIGNAL(clicked()),this,SLOT(click_TestSegmentController()));
+  connect(buttonTestSegmentController_,SIGNAL(clicked()),this,SLOT(onClick_buttonTestSegmentController()));
+
+  //TODO:Slot segmentation buttons
 
   emit addToolbox(tr("FirstPlugin"),toolBox_);
 }
@@ -115,20 +128,43 @@ void FirstPlugin::ClearTargetsClicked(){
 }
 
 /*! generates a SegmentController from the currently selected mesh vertices and performs test operations */
-void FirstPlugin::click_TestSegmentController(){
+void FirstPlugin::onClick_buttonTestSegmentController(){
   log("Testing Controller class");
   PluginFunctions::ObjectIterator o_it = PluginFunctions::ObjectIterator(PluginFunctions::TARGET_OBJECTS), E = PluginFunctions::objectsEnd();
   if(o_it != E){
+
     if(o_it->dataType(DATA_TRIANGLE_MESH)) {
+		//build a vector of selected vertices
 	    std::vector<TriMesh::VertexHandle> vertices;
       TriMesh* Tmesh = PluginFunctions::triMesh(*o_it);
       TriMesh::VertexIter itV, itE;
       itV = Tmesh->vertices_begin();
       itE = Tmesh->vertices_end();
+	  TriMeshSegmentCollection* segmentCollection;
+
       for(; itV!=itE; ++itV)
 	      if(Tmesh->status(itV).selected()) vertices.push_back(itV.handle());
+      Tmesh->handle();
       //INSERT SEGMENTER CLASS CODE HERE
-	  
+	  //
+	  ////check if the mesh has a SegmentCollection property
+	  //OpenMesh::MPropHandleT<TriMeshSegmentCollection> SC_h;
+   //   if(!Tmesh->get_property_handle(SC_h, TriMeshSegmentCollection::defaultName()){
+		 // Tmesh->add_property(SC_h,TriMeshSegmentCollection.defaultName()); //if not create it
+   //       Tmesh->property(SC_h).set_persistent(true);
+	  //}
+	  //
+	  ////create the segment item
+	  //TriMeshSegment* segment  = new TriMeshSegment;
+	  //segment->vertexHandles_ = vertices;
+
+	  ////add it to the collection
+   //   TriMeshSegment::SegmentHandle s_h = Tmesh->property(SC_h).addSegment(segment);
+
+   //     //unselect all vertices to show command complete
+      for(int i = 0; i < segment.vertexHandles_.size(); i++){
+          Tmesh->status(segment.vertexHandles_[i]).set_selected(false);
+      }
 
     } else {
 		std::vector<typename PolyMesh::VertexHandle> vertices;
@@ -167,4 +203,19 @@ int FirstPlugin::addTriMesh() {
 }
 
 
+void onClick_buttonSegmentAdd(){
+
+}
+
+void onClick_buttonSegmentDelete(){
+
+}
+
+void onClick_buttonSegmentAddVertices(){
+
+}
+
+void onClick_buttonSegmentRemoveVertices(){
+
+}
  Q_EXPORT_PLUGIN2(firstPlugin, FirstPlugin);
