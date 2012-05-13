@@ -56,13 +56,13 @@ namespace OpenMesh{
 
 			static size_t size_of(const value_type& _v){
 				size_t bytes = 0;
-				unsigned int N = _v.vertexHandles_.size();//get the size of the segment count
+				unsigned int N = _v.VertexHandleSet_.size();//get the size of the segment count
 				bytes += IO::size_of(N);
 				bytes += IO::size_of(_v.name_); //get the size of name_
 				bytes += IO::size_of(_v.segmentHandle_); //get the size of segmentHandle
 				//get the size of handles_
-				value_type::VertexHandleContainer::const_iterator it = _v.vertexHandles_.begin(); 
-				for(;it!=_v.vertexHandles_.end(); ++it)
+				value_type::VertexHandleSet::const_iterator it = _v.VertexHandleSet_.begin(); 
+				for(;it!=_v.VertexHandleSet_.end(); ++it)
 				{
 					bytes += IO::size_of(*it);	
 				}
@@ -72,12 +72,12 @@ namespace OpenMesh{
 			static size_t store(std::ostream& _os, const value_type& _v, bool _swap=false){
 				size_t bytes = 0;
 
-				unsigned int N = _v.vertexHandles_.size(); //get the size of the segment count
+				unsigned int N = _v.VertexHandleSet_.size(); //get the size of the segment count
 				bytes += IO::store(_os,N,_swap);
 				bytes += IO::store(_os,_v.name_,_swap); //get the size of name_
 				bytes += IO::store(_os,_v.segmentHandle_,_swap);//get the size of handle_
-				value_type::VertexHandleContainer::const_iterator it = _v.vertexHandles_.begin(); //get the size of vertexHandles_
-				for(;it!=_v.vertexHandles_.end(); ++it)
+				value_type::VertexHandleSet::const_iterator it = _v.VertexHandleSet_.begin(); //get the size of VertexHandleSet_
+				for(;it!=_v.VertexHandleSet_.end(); ++it)
 				{
 					bytes += IO::store(_os,*it,_swap);	
 				}
@@ -88,7 +88,7 @@ namespace OpenMesh{
 				size_t   bytes = 0;
 				unsigned int N = 0;
 
-				_v.vertexHandles_.clear();
+				_v.VertexHandleSet_.clear();
 				bytes += IO::restore(_is,N,_swap);//restore member count
 				bytes += IO::restore(_is,_v.name_, _swap);//restore name_
 				bytes += IO::restore(_is,_v.segmentHandle_,_swap);//restore handle
@@ -97,7 +97,7 @@ namespace OpenMesh{
 				value_type::VertexHandle H;
 				for (size_t i = 0; i<N && _is.good(); ++i){
 					bytes+= bytes += IO::restore(_is,H,_swap);
-					_v.vertexHandles_.push_back(H);
+					_v.VertexHandleSet_.push_back(H);
 				}
 				return _is.good() ? bytes : 0;
 			}
@@ -122,7 +122,7 @@ namespace OpenMesh{
 				bytes += IO::size_of(N);
 
 				//get the size of handles_
-				value_type::SegmentVector::const_iterator it = _v.segments_.begin();
+				value_type::SegmentPointerContainer::const_iterator it = _v.segments_.begin();
 				for(;it!=_v.segments_.end(); ++it)
 				{
 					bytes += IO::size_of(*it);	
@@ -136,7 +136,7 @@ namespace OpenMesh{
 				unsigned int N = _v.segments_.size();
 				bytes += IO::store(_os,N,_swap);
 				//get the size of handles_
-				value_type::SegmentVector::const_iterator it = _v.segments_.begin();
+				value_type::SegmentPointerContainer::const_iterator it = _v.segments_.begin();
 
 				for(;it!=_v.segments_.end(); ++it)
 				{
@@ -160,7 +160,7 @@ namespace OpenMesh{
 				}
 
 				value_type::SegmentHandle maxHandle = 0;
-				value_type::SegmentVector::const_iterator s_it = _v.segments_.begin();
+				value_type::SegmentPointerContainer::const_iterator s_it = _v.segments_.begin();
 				for(;s_it != _v.segments_.end(); ++s_it){
 					maxHandle = (*s_it)->segmentHandle_ > maxHandle ? (*s_it)->segmentHandle_ : maxHandle;
 				}

@@ -41,13 +41,14 @@ signals:
 public :
   
   FirstPlugin();
-  ~FirstPlugin() {};
+  ~FirstPlugin();
   
   QString name() { return QString("FirstPlugin"); };
   
   QString description() { return QString("Does actually nothing but works!"); };
 
 private:
+  //QT items
   QLabel* labelStaticText_;
   QLabel* labelDynamicText_;
   QPushButton* buttonCountTargetObjects_;
@@ -64,10 +65,17 @@ private:
   QPushButton* buttonSegmentAddVertices_;
   QPushButton* buttonSegmentRemoveVertices_;
 
+  //Class Members
+  MeshSegmentCollectionBase* meshSegmentCollectionBase_;
 
   //private functions
   int addTriMesh();
-private slots:
+  void refreshCombo();
+  template <typename myMesh> void addSegmentT(myMesh _mesh, std::string _name);
+  template <typename myMesh> void segmentAddVertices(myMesh* _mesh);
+  template <typename MSC> void refreshComboT(MSC *_sc);
+
+ private slots:
   //baseInterface
   void initializePlugin();
   void pluginsInitialized();
