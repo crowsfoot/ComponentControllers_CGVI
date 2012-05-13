@@ -77,7 +77,7 @@ template <typename myMesh> bool MeshSegmentCollectionT<myMesh>::remove(typename 
 }
 
 
-template  <typename myMesh> MeshSegmentT<myMesh>* MeshSegmentCollectionT<myMesh>::get(SegmentHandle _h){
+template  <typename myMesh> MeshSegmentT<myMesh>* const MeshSegmentCollectionT<myMesh>::get(SegmentHandle _h){
     SegmentPointerContainer::iterator sp_it = segmentPointerContainer_.find(_h);
     if (sp_it == segmentPointerContainer_.end()) return 0;
     return sp_it->second;

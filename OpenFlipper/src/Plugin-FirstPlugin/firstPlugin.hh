@@ -9,6 +9,7 @@
 #include <OpenFlipper/common/Types.hh>
 //#include <Plugin-FirstPlugin/SegmentController.hh>
 #include "Segmenter_toplevel.hh"
+#include "SegmtentTypes.hh"
 
 class FirstPlugin : public QObject, BaseInterface, ToolboxInterface, LoggingInterface, PluginConnectionInterface, LoadSaveInterface
 {
@@ -20,6 +21,7 @@ Q_INTERFACES(PluginConnectionInterface)
 Q_INTERFACES(LoadSaveInterface)
 
 signals:
+  //---interface signals---
 //baseInterface
   void updateView();
   void updatedObject(int _identifier, const UpdateType& _type);
@@ -37,11 +39,25 @@ signals:
   void doClearTargets();
   void crossPluginConnect(QString _pluginName1, const char* _signal, QString _pluginName2, const char* _slot);
 
+  //---in-code signals---
+  //pluginPrimitiveGenerator
+  
+  int signalCreateCube();
+  int signalDeleteObject(ObjectHandle);
+  int signalTransformObject(ObjectHandle _h, Matrix4x4 _matrix);
+  
 
 public :
+  //---typedefs---
+  typedef SegmentTypesBase::SegmentHandle SegmentHandle;
+  typedef int ObjectHandle;
+
+  //---initialisers---
   
   FirstPlugin();
   ~FirstPlugin();
+
+  //---public properties---
   
   QString name() { return QString("FirstPlugin"); };
   
@@ -67,13 +83,20 @@ private:
 
   //Class Members
   MeshSegmentCollectionBase* meshSegmentCollectionBase_;
+  QMap<SegmentHandle, ObjectHandle> meshSegmentDispObjMap_;
+  
 
   //private functions
   int addTriMesh();
   void refreshCombo();
+  void refreshDisplay();
+
+  //template sub-functions called by slotted functions
   template <typename myMesh> void addSegmentT(myMesh _mesh, std::string _name);
   template <typename myMesh> void segmentAddVertices(myMesh* _mesh);
   template <typename MSC> void refreshComboT(MSC *_sc);
+  template <typename myMesh> void TestSegmentControllerT();
+  
 
  private slots:
   //baseInterface

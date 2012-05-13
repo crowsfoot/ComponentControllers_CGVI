@@ -26,6 +26,7 @@
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include "TypeCompare.hh"
 #include "SegmentDescriptor.hh"
+#include "SegmentTypes.hh"
 
 template <typename myMesh> class MeshSegmentT;
 template <typename myMesh> class MeshSegmentCollectionT;
@@ -37,15 +38,10 @@ public:
     virtual bool isPolyMesh(){return false;};
 };
 
-template <typename myMesh> class MeshSegmentT : public MeshSegmentBase{
+template <typename myMesh> class MeshSegmentT : public MeshSegmentBase, public SegmentTypesT<myMesh>{
 public:
 
     //*******************type defines*******************
-
-    typedef typename myMesh::VertexHandle VertexHandle; //vertex handle
-    typedef std::set<VertexHandle> VertexHandleSet; //vertex handle container (see class definiton)
-
-    typedef unsigned int SegmentHandle; //handle/identifier
     typedef  MeshSegmentT<myMesh> myType ; //self type
     typedef MeshSegmentCollectionT<myMesh> SegmentCollection ; //Container/manager for this class
     typedef typename myMesh::VertexIter VertexIter;
@@ -56,7 +52,7 @@ public:
 
     ~MeshSegmentT();///sets the segment property of each vertex to zero/unselected
 
-    //******************Class Access functions*************************
+    //******************Data Access functions*************************
     SegmentHandle handle(){ return segmentHandle_; }
 
     void add(VertexHandle _v);
@@ -65,23 +61,23 @@ public:
     typename VertexHandleSet::const_iterator begin(){ return vertexHandleSet_.begin();}
     typename VertexHandleSet::const_iterator end(){ return vertexHandleSet_.end();}
 
-    //virtual bool MeshSegmentBase::isPolyMesh();
-    //virtual bool MeshSegmentBase::isTriMesh();
-
     bool isPolyMesh(){return isXMesh<myMesh,PolyMesh>();}
     bool isTriMesh(){return isXMesh<myMesh,TriMesh>();}
 
     std::string name(){return  name_;}
-    void setName(std::string _name){name_=_name;}
+    void set_name(std::string _name){name_=_name;}
     static std::string defaultVertexPropName(){ return std::string("vpropSegmentation"); };
-    myMesh* mesh(){return mesh_;}
+    myMesh* mesh()  {return mesh_;}
+    const VertexHandleSet& vertexHandleSet()  {return vertexHandleSet_;}
 protected:
+
     //************** Data Members*************************
     SegmentHandle segmentHandle_;
     std::string name_;
     VertexHandleSet vertexHandleSet_;
     myMesh* mesh_;
     OpenMesh::VPropHandleT<SegmentHandle> vertexPropHandle_;
+    SegmentDescriptorT<myMesh> segmentDescriptor_;
 
     //**************protected functions*******************
 
@@ -106,7 +102,7 @@ public:
     virtual bool isPolyMesh(){return false;};
 };
 
-template <typename myMesh> class MeshSegmentCollectionT : public  MeshSegmentCollectionBase{
+template <typename myMesh> class MeshSegmentCollectionT : public  MeshSegmentCollectionBase, public SegmentTypesT<myMesh>{
 
 public:
     static std::string defaultName(){ return std::string("Segmentation"); }
@@ -114,12 +110,8 @@ public:
     typedef MeshSegmentCollectionT<myMesh> myType; //self type
     //segment level types
     typedef typename MeshSegmentT<myMesh> Segment;
-    typedef typename Segment::SegmentHandle SegmentHandle;
     typedef typename std::map<SegmentHandle, Segment*> SegmentPointerContainer; //TODO: change implementation to use a map
 
-    //vertex level types
-    typedef typename myMesh::VertexHandle VertexHandle;
-    typedef typename Segment::VertexHandleSet VertexHandleSet;
 
     typedef typename SegmentPointerContainer::const_iterator const_iterator;
 
@@ -149,7 +141,8 @@ public:
     Segment* add(myMesh* _mesh);
     bool remove( Segment* _s);
     bool  remove( SegmentHandle _h);
-    Segment* get(SegmentHandle _h);
+     Segment* const get  (SegmentHandle _h);
+     Segment* const operator[] (SegmentHandle _h){return get(_h);};
 
 
     typename SegmentPointerContainer::const_iterator begin(){ return segmentPointerContainer_.begin();}
@@ -163,6 +156,7 @@ protected:
     SegmentHandle maxHandle_; 
     SegmentPointerContainer segmentPointerContainer_;
     friend struct OpenMesh::IO::binary<myType>;
+    
 };
 
 

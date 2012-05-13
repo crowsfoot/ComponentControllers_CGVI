@@ -85,8 +85,11 @@ void FirstPlugin::initializePlugin(){
 //link any signals to scriptable slots on external plugins
 void FirstPlugin::pluginsInitialized(){
     log(QString("Linking script calls"));
+    //connect external slots
     crossPluginConnect(QString("firstplugin"),SIGNAL(doClearTargets()),QString("primitivesgeneratorplugin"),SLOT(addSphere()));
-    
+    crossPluginConnect(QString("firstplugin"),SIGNAL(signalCreateCube()),QString("primitivesgeneratorplugin"),SLOT(addTriangulatedCube()));
+    crossPluginConnect(QString("firstplugin"),SIGNAL(signalDeleteObject(ObjectHandle)) ,QString("core"),SLOT(deleteObject(ObjectHandle)));
+    crossPluginConnect(QString("firstplugin"),SIGNAL(signalTransformObject(ObjectHandle, Matrix4x4)), QString("move"),SLOT(transform(ObjectHandle,Matrix4x4)));
 }
 
 //updates the toolbox on the selected verties
@@ -146,54 +149,48 @@ void FirstPlugin::ClearTargetsClicked(){
   emit doClearTargets();
 }
 
-/*! generates a SegmentController from the currently selected mesh vertices and performs test operations */
+///Call test routines on the segment selected in comboSegments_
+///Identify the type and pass to the template equivalent
 void FirstPlugin::onClick_buttonTestSegmentController(){
   log("Button Not Currently Implemented");
+  
 
-  //test one
+  //test one:
   //clear mesh selection
   //select vertices from current segment
-  //
-//PluginFunctions::ObjectIterator o_it = PluginFunctions::ObjectIterator(PluginFunctions::TARGET_OBJECTS), o_end = PluginFunctions::objectsEnd();
-
-  //PluginFunctions::ObjectIterator o_it = PluginFunctions::ObjectIterator(PluginFunctions::TARGET_OBJECTS), E = PluginFunctions::objectsEnd();
-  //if(o_it != E){
-
-  //  if(o_it->dataType(DATA_TRIANGLE_MESH)) {
-		////build a vector of selected vertices
-	 //   std::vector<TriMesh::VertexHandle> vertices;
-  //    TriMesh* Tmesh = PluginFunctions::triMesh(*o_it);
-  //    TriMesh::VertexIter itV, itE;
-  //    itV = Tmesh->vertices_begin();
-  //    itE = Tmesh->vertices_end();
-	 // TriMeshSegmentCollection* segmentCollection;
-
-  //    for(; itV!=itE; ++itV)
-	 //     if(Tmesh->status(itV).selected()) vertices.push_back(itV.handle());
- 
-  //    for(int i = 0; i < segment.VertexHandleSet_.size(); i++){
-  //        Tmesh->status(segment.VertexHandleSet_[i]).set_selected(false);
-  //    }
-
-  //  } else {
-		//std::vector<typename PolyMesh::VertexHandle> vertices;
-  //    PolyMesh* Pmesh = PluginFunctions::polyMesh(*o_it);
-
-  //    PolyMesh::VertexIter itV, itE;
-  //    itV = Pmesh->vertices_begin();
-  //    itE = Pmesh->vertices_end();
-  //    for(; itV!=itE; ++itV)
-	 //     if(Pmesh->status(itV).selected()) vertices.push_back(itV.handle());
-		//
-
-	 // //INSERT SEGMENTER CLASS CODE HERE
-  // 	  emit updatedObject(o_it->id(), UPDATE_SELECTION_VERTICES);
-	 // emit updateView();
-  //  }
-  //} else {
-	 // log(QString("No objects found"));
-  //}
+  //test two:
+  //generate and adisplay bounding box
+  
+  if(comboSegments_->count() == 0){
+	  log(QString("No Segments Detected"));
+	  return;
+  }
+  if(meshSegmentCollectionBase_->isPolyMesh())  TestSegmentControllerT<PolyMesh>();
+  else if(meshSegmentCollectionBase_->isTriMesh()) TestSegmentControllerT<TriMesh>();
+  else log(QString("segment handler is not defined using a compatable mesh type"));
 }
+
+template <typename myMesh> void FirstPlugin::TestSegmentControllerT(){
+	//generate a SegmentDescriptor bounding box and log the resulting minmax coordinates
+    typedef MeshSegmentT<myMesh> Segment;
+    typedef MeshSegmentCollectionT<myMesh> SegmentCollection ;
+	Segment::SegmentHandle segmentHandle = comboSegments_->itemData(comboSegments_->currentIndex()).toUInt();
+	SegmentCollection* segmentCollection = (SegmentCollection*)meshSegmentCollectionBase_;
+    Segment* segment = (*segmentCollection)[segmentHandle];
+    
+	SegmentDescriptorT<myMesh> descriptor(segment->mesh(), segment->vertexHandleSet());
+	QString p1 = "%1, %2, %3";
+       QString	p2 = p1;
+	for(int i =0; i<3;++i){
+		p1 = p1.arg(descriptor.maxPoint()[i]);
+		p2 = p2.arg(descriptor.minPoint()[i]);
+	}
+	log(QString("MaxPoint: ").append(p1));
+	log(QString("MinPoint: ").append(p2));
+}
+
+template void FirstPlugin::TestSegmentControllerT<PolyMesh>();
+template void FirstPlugin::TestSegmentControllerT<TriMesh>();
 
 	///Code copied from PluginPrimitiveGenerator
 int FirstPlugin::addTriMesh() {
@@ -301,7 +298,7 @@ typedef MeshSegmentCollectionT<myMesh> SegmentCollection;
     SegmentCollection::VertexHandleSet vertexHandles;
     SegmentCollection::SegmentHandle segmentHandle;
     segmentHandle = comboSegments_->itemData(comboSegments_->currentIndex()).toUInt();
-    log(QString("Segment").arg(segmentHandle));
+    log(QString("Segment%1").arg(segmentHandle));
     
     MeshSegmentCollectionT<myMesh>* msc = (MeshSegmentCollectionT<myMesh>*)meshSegmentCollectionBase_;
     msc->harvestSelectedVertices(_mesh, vertexHandles);
@@ -354,6 +351,38 @@ template <typename MSC> void FirstPlugin::refreshComboT(MSC *_sc){
 template void FirstPlugin::refreshComboT<TriMeshSegmentCollection>(TriMeshSegmentCollection*);
 template void FirstPlugin::refreshComboT<PolyMeshSegmentCollection>(PolyMeshSegmentCollection*);
 
+void FirstPlugin::refreshDisplay(){
+	QMap::const_iterator o_it = meshSegmentDispObjMap.begin(), o_end = meshSegmentDispObjMap_.end();
+	//remove previous representations
+	for(;o_it != o_ent;++o_it){
+		//add any bad entries to the list to remove and log an error
+		if(!PluginFunctions::objectExists(*o_it)){
+			log(QString("Segment Handle %1 Appears in Map but display object does not exist").arg(*o_it));
+		}
+		else{
+			//the object exists so delete it
+			emit signalDeleteObject(*o_it);
+		}
+	}
+	meshSegmentDispObjMap_->clear();
+	
+	SegmentPointerContainer::const_it s_it = segmentPointerContainer_->begin(), s_end = segmentPointerContainer_->end();
+	for(;s_it <> s_end; ++s_it){
+	}
+}
+
+template <typename myMesh> refreshDisplayT(){
+	typedef MeshSegmentCollectionT<myMesh>* SegmentContainer;
+	SegmentContainer* segmentContainer = (SegmentContainer*)meshSegmentCollectionBase_;
+	segmentContainer::const_iterator sp_it = segmentContainer->begin(), sp_end = segmentContainer->end();
+	for(; sp_it != sp_end; ++sp_it){
+		SegmentHandle h  = emit signalCreateCube();
+		meshSegmentDispObjMap_[(sp_it)->handle()] = h;
+		BaseObject* obj = 0;
+		PluginFunctions::getObject(h, obj);
+		emit signalTransformObject(obj,(*sp_it)->segmentDescriptor_.worldTransform());
+	}
+}
  Q_EXPORT_PLUGIN2(firstPlugin, FirstPlugin);
 
  /***********************
@@ -362,3 +391,46 @@ template void FirstPlugin::refreshComboT<PolyMeshSegmentCollection>(PolyMeshSegm
 *	PluginFunctions::ObjectIterator o_it = PluginFunctions::ObjectIterator(PluginFunctions::TARGET_OBJECTS), o_end = PluginFunctions::objectsEnd();
 */
 //
+//
+//
+//**************************
+//
+//PluginFunctions::ObjectIterator o_it = PluginFunctions::ObjectIterator(PluginFunctions::TARGET_OBJECTS), o_end = PluginFunctions::objectsEnd();
+
+  //PluginFunctions::ObjectIterator o_it = PluginFunctions::ObjectIterator(PluginFunctions::TARGET_OBJECTS), E = PluginFunctions::objectsEnd();
+  //if(o_it != E){
+
+  //  if(o_it->dataType(DATA_TRIANGLE_MESH)) {
+		////build a vector of selected vertices
+	 //   std::vector<TriMesh::VertexHandle> vertices;
+  //    TriMesh* Tmesh = PluginFunctions::triMesh(*o_it);
+  //    TriMesh::VertexIter itV, itE;
+  //    itV = Tmesh->vertices_begin();
+  //    itE = Tmesh->vertices_end();
+	 // TriMeshSegmentCollection* segmentCollection;
+
+  //    for(; itV!=itE; ++itV)
+	 //     if(Tmesh->status(itV).selected()) vertices.push_back(itV.handle());
+ 
+  //    for(int i = 0; i < segment.VertexHandleSet_.size(); i++){
+  //        Tmesh->status(segment.VertexHandleSet_[i]).set_selected(false);
+  //    }
+
+  //  } else {
+		//std::vector<typename PolyMesh::VertexHandle> vertices;
+  //    PolyMesh* Pmesh = PluginFunctions::polyMesh(*o_it);
+
+  //    PolyMesh::VertexIter itV, itE;
+  //    itV = Pmesh->vertices_begin();
+  //    itE = Pmesh->vertices_end();
+  //    for(; itV!=itE; ++itV)
+	 //     if(Pmesh->status(itV).selected()) vertices.push_back(itV.handle());
+		//
+
+	 // //INSERT SEGMENTER CLASS CODE HERE
+  // 	  emit updatedObject(o_it->id(), UPDATE_SELECTION_VERTICES);
+	 // emit updateView();
+  //  }
+  //} else {
+	 // log(QString("No objects found"));
+  //}
