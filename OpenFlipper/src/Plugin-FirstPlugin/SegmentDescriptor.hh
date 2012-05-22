@@ -4,8 +4,17 @@
 #include <set>
 #include <ObjectTypes/PolyMesh/PolyMesh.hh>
 #include <ObjectTypes/TriangleMesh/TriangleMesh.hh>
+#include "OpenFlipper/BasePlugin/PluginFunctions.hh"
 #include "SegmentTypes.hh"
-#include "alglib/linalg.cpp"
+#include "alglib/linalg.h"
+
+#include <vector>
+#include <string>
+#include <algorithm>
+#include <../ObjectTypes/PolyMesh/PolyMesh.hh>
+#include <../ObjectTypes/TriangleMesh/TriangleMesh.hh>
+#include <../ObjectTypes/MeshObject/MeshObjectT.hh>
+#include <../OpenFlipper/common/DataTypes.hh>
 
 template <typename myMesh> class SegmentDescriptorT: public SegmentTypesT<myMesh>{
     typedef typename myMesh::Point Point;
@@ -30,10 +39,17 @@ public:
     void set_objID(int _id){objID_ = _id;}
 
     //data functions
-    alglib::real_2d_array worldTransform();
-    void generate(myMesh* _mesh, const VertexHandleSet& _vhs);
+    alglib::real_2d_array worldTransformAL();
+    
+    Matrix4x4 worldTransformOF();
+    bool generate(myMesh* _mesh, const VertexHandleSet& _vhs);
 
 protected:
+    alglib::real_2d_array* basisVectors_;
+    alglib::real_1d_array* basisVariance_;
+    alglib::real_1d_array* medianPoint_;
+    alglib::real_2d_array* worldTransform_;
+
 	Point minPoint_;
     Point maxPoint_;
 	

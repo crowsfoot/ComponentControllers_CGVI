@@ -8,10 +8,10 @@
 #include <OpenFlipper/BasePlugin/PluginConnectionInterface.hh>
 #include <OpenFlipper/common/Types.hh>
 //#include <Plugin-FirstPlugin/SegmentController.hh>
-#include "Segmenter_toplevel.hh"
-#include "SegmtentTypes.hh"
+#include "MeshSegmentCollectionT.hh"
+#include "SegmentTypes.hh"
 
-class FirstPlugin : public QObject, BaseInterface, ToolboxInterface, LoggingInterface, PluginConnectionInterface, LoadSaveInterface
+class FirstPlugin : public QObject, BaseInterface, ToolboxInterface, LoggingInterface, PluginConnectionInterface, LoadSaveInterface, SegmentTypesBase
 {
 Q_OBJECT
 Q_INTERFACES(BaseInterface)
@@ -80,11 +80,12 @@ private:
   QPushButton* buttonSegmentDelete_;
   QPushButton* buttonSegmentAddVertices_;
   QPushButton* buttonSegmentRemoveVertices_;
+  QPushButton* buttonSegmentFromMesh_;
 
   //Class Members
   MeshSegmentCollectionBase* meshSegmentCollectionBase_;
   QMap<SegmentHandle, ObjectHandle> meshSegmentDispObjMap_;
-  
+  template <typename myMesh> void test_FaceColoursT(myMesh* _mesh);
 
   //private functions
   int addTriMesh();
@@ -96,7 +97,7 @@ private:
   template <typename myMesh> void segmentAddVertices(myMesh* _mesh);
   template <typename MSC> void refreshComboT(MSC *_sc);
   template <typename myMesh> void TestSegmentControllerT();
-  
+  template <typename myMesh> void refreshDisplayT();
 
  private slots:
   //baseInterface
@@ -113,6 +114,7 @@ private:
   void onClick_buttonSegmentDelete();
   void onClick_buttonSegmentAddVertices();
   void onClick_buttonSegmentRemoveVertices();
+  void onClick_buttonSegmentFromMesh();
 
 public slots:
 	//openFlipper boilerplate

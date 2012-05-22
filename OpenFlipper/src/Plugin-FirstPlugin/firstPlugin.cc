@@ -2,10 +2,10 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <cstdlib>
 #include <../ObjectTypes/PolyMesh/PolyMesh.hh>
 #include <../ObjectTypes/TriangleMesh/TriangleMesh.hh>
-
-
+#include <../ObjectTypes/MeshObject/MeshObjectT.hh>
 #include "OpenFlipper/BasePlugin/PluginFunctions.hh"
 
 
@@ -44,6 +44,7 @@ void FirstPlugin::initializePlugin(){
   buttonSegmentDelete_	= new QPushButton(tr("Delete Segment"));
   buttonSegmentAddVertices_ = new QPushButton(tr("Add Selected Vertices"));
   buttonSegmentRemoveVertices_ = new QPushButton(tr("Remove Selected Vertices"));
+  buttonSegmentFromMesh_ = new QPushButton(tr("Initialise segments from mesh"));
 
   //QComboBox
   comboSegments_ = new QComboBox(toolBox_);
@@ -64,8 +65,9 @@ void FirstPlugin::initializePlugin(){
   layout_->addWidget(buttonSegmentDelete_,5,1);
   layout_->addWidget(buttonSegmentAddVertices_,6,0);
   layout_->addWidget(buttonSegmentRemoveVertices_,6,1);	
+  layout_->addWidget(buttonSegmentFromMesh_,7,0);
 
-  layout_->addWidget(comboSegments_,7,0);
+  layout_->addWidget(comboSegments_,7,1);
   
   //slot the buttons here
   connect(buttonCountTargetObjects_,SIGNAL(clicked()),this, SLOT(CountTargetObjects()));
@@ -77,6 +79,7 @@ void FirstPlugin::initializePlugin(){
   connect(buttonSegmentDelete_,SIGNAL(clicked()),this,SLOT(onClick_buttonSegmentDelete()));
   connect(buttonSegmentAddVertices_,SIGNAL(clicked()),this,SLOT(onClick_buttonSegmentAddVertices()));
   connect(buttonSegmentRemoveVertices_,SIGNAL(clicked()),this,SLOT(onClick_buttonSegmentRemoveVertices()));
+  connect(buttonSegmentFromMesh_, SIGNAL(clicked()),this,SLOT(onClick_buttonSegmentFromMesh()));
 
   emit addToolbox(tr("FirstPlugin"),toolBox_);
 }
@@ -152,9 +155,31 @@ void FirstPlugin::ClearTargetsClicked(){
 ///Call test routines on the segment selected in comboSegments_
 ///Identify the type and pass to the template equivalent
 void FirstPlugin::onClick_buttonTestSegmentController(){
-  log("Button Not Currently Implemented");
   
 
+	//iterate though each face
+	//set the colour to slightly different
+	    PluginFunctions::ObjectIterator o_it = PluginFunctions::ObjectIterator(PluginFunctions::TARGET_OBJECTS), o_end = PluginFunctions::objectsEnd();
+         if(o_it != o_end){
+           if(o_it->dataType(DATA_TRIANGLE_MESH)) {
+		   TriMesh* trimesh;
+		   trimesh = PluginFunctions::triMesh(o_it);
+		  test_FaceColoursT(trimesh); 
+           }
+           else if(o_it->dataType(DATA_POLY_MESH)){
+		   PolyMesh* polymesh;
+		   polymesh = PluginFunctions::polyMesh(o_it);
+		  test_FaceColoursT(polymesh); 
+           }
+           else {
+               log(QString("Invalid Mesh Type: Current supports TriMesh and PolyMesh"));
+           }
+         }
+	 
+	
+	
+
+  return;
   //test one:
   //clear mesh selection
   //select vertices from current segment
@@ -168,9 +193,14 @@ void FirstPlugin::onClick_buttonTestSegmentController(){
   if(meshSegmentCollectionBase_->isPolyMesh())  TestSegmentControllerT<PolyMesh>();
   else if(meshSegmentCollectionBase_->isTriMesh()) TestSegmentControllerT<TriMesh>();
   else log(QString("segment handler is not defined using a compatable mesh type"));
+
+  return;
+  log("Button Not Currently Implemented");
 }
 
 template <typename myMesh> void FirstPlugin::TestSegmentControllerT(){
+    
+/*
 	//generate a SegmentDescriptor bounding box and log the resulting minmax coordinates
     typedef MeshSegmentT<myMesh> Segment;
     typedef MeshSegmentCollectionT<myMesh> SegmentCollection ;
@@ -187,7 +217,44 @@ template <typename myMesh> void FirstPlugin::TestSegmentControllerT(){
 	}
 	log(QString("MaxPoint: ").append(p1));
 	log(QString("MinPoint: ").append(p2));
+
+
+	//test 2: run the display algorithm
+	refreshDisplay();
+    */
 }
+
+//**********************Testing template functions***************************
+template <typename myMesh> void FirstPlugin::test_FaceColoursT(myMesh* _mesh){
+	//get the mesh pointer
+	//myMesh* mesh = _meshObj->mesh();
+
+	//request face colours
+	_mesh->request_face_colors();
+	//get faec iterators
+	//
+	myMesh::FaceIter f_it = _mesh->faces_begin();
+	myMesh::FaceIter f_end = _mesh->faces_end();
+
+	//set the colour property of each face to something different
+//default colour definition is Vec3uc, unsigned character
+	myMesh::Color color;
+	color.vectorize(0);
+	for(; f_it != f_end; ++f_it){
+		color[0] = (color[0] + 0.25);
+        color[0] = color[0] > 1.0 ? 0.0 : color[0];
+		_mesh->set_color(f_it.handle(), color);
+	}
+	//set rendering of mesh object to colour by face
+	//TODO::work out how to make it render by face colour in code
+	
+
+}
+template void FirstPlugin::test_FaceColoursT<TriMesh>(TriMesh* _meshObj);
+template void FirstPlugin::test_FaceColoursT<PolyMesh>(PolyMesh* _meshObj);
+
+//
+//**********************Final declares******************************
 
 template void FirstPlugin::TestSegmentControllerT<PolyMesh>();
 template void FirstPlugin::TestSegmentControllerT<TriMesh>();
@@ -235,20 +302,36 @@ void FirstPlugin::onClick_buttonSegmentAdd(){
        return;
    }
 
+   
     //generate a new segment
+   //static OpenMesh::Vec4f color(0.0,0.0,0.0,1.0); //rgba
+   //color[2] += 0.25;
+
+   //if(color[2] > 1) {color[2] = 0.0; color[1] += 0.25;}
+   //if(color[1] > 1) {color[1] = 0.0; color[0] += 0.25;}
+   //if(color[0] > 1) {color[2] = 0.0; color[0] = 0.25;}
+   //
+   float red = (float)(rand()%100)/100.0;
+   float blue = (float)(rand()%100)/100.0;
+   float green = (float)(rand()%100)/100.0;
+	   
+   OpenMesh::Vec4f color(red,blue,green,1.0);
+
+    //OpenMesh::Vec4f color(1.0,1.0,1.0,1.0);
     if(meshSegmentCollectionBase_->isTriMesh()){
+        
 	    TriMesh* tmesh = PluginFunctions::triMesh(*o_it);
         TriMeshSegmentCollection* tmsc = (TriMeshSegmentCollection*)meshSegmentCollectionBase_;
-	    TriMeshSegment* tms = tmsc->add(tmesh);
+	    TriMeshSegment* tms = tmsc->add(tmesh, color);
     } else if(meshSegmentCollectionBase_->isPolyMesh()){
         PolyMesh* pmesh = PluginFunctions::polyMesh(*o_it);
         PolyMeshSegmentCollection* pmsc = (PolyMeshSegmentCollection*)meshSegmentCollectionBase_;
-	    PolyMeshSegment* pms = pmsc->add(pmesh);
+	    PolyMeshSegment* pms = pmsc->add(pmesh,color);
     }
     
     //refresh the comboBox
     refreshCombo();
-    
+    emit updatedObject((*o_it)->id(),UPDATE_COLOR);
     
 }
 
@@ -283,6 +366,7 @@ void FirstPlugin::onClick_buttonSegmentDelete(){
 
 void FirstPlugin::onClick_buttonSegmentAddVertices(){
   PluginFunctions::ObjectIterator o_it(PluginFunctions::TARGET_OBJECTS);
+  if(meshSegmentCollectionBase_ != 0){
     if (o_it->dataType(DATA_TRIANGLE_MESH) && meshSegmentCollectionBase_->isTriMesh()) {
         segmentAddVertices(PluginFunctions::triMesh(*o_it));
     } else if (o_it->dataType(DATA_POLY_MESH) && meshSegmentCollectionBase_->isPolyMesh()){
@@ -291,6 +375,8 @@ void FirstPlugin::onClick_buttonSegmentAddVertices(){
     else{
         log(QString("Incompatable data type"));
     }
+    emit updatedObject((*o_it)->id(),UPDATE_COLOR);
+  }
 }
 
 template <typename myMesh> void FirstPlugin::segmentAddVertices(myMesh* _mesh){
@@ -352,37 +438,110 @@ template void FirstPlugin::refreshComboT<TriMeshSegmentCollection>(TriMeshSegmen
 template void FirstPlugin::refreshComboT<PolyMeshSegmentCollection>(PolyMeshSegmentCollection*);
 
 void FirstPlugin::refreshDisplay(){
-	QMap::const_iterator o_it = meshSegmentDispObjMap.begin(), o_end = meshSegmentDispObjMap_.end();
+	QMap<SegmentHandle,ObjectHandle>::const_iterator o_it = meshSegmentDispObjMap_.begin(), o_end = meshSegmentDispObjMap_.end();
 	//remove previous representations
-	for(;o_it != o_ent;++o_it){
+    /*
+	for(;o_it != o_end;++o_it){
 		//add any bad entries to the list to remove and log an error
-		if(!PluginFunctions::objectExists(*o_it)){
+        
+        if(!PluginFunctions::objectExists(o_it.value())){
 			log(QString("Segment Handle %1 Appears in Map but display object does not exist").arg(*o_it));
 		}
 		else{
+
+
 			//the object exists so delete it
 			emit signalDeleteObject(*o_it);
 		}
 	}
-	meshSegmentDispObjMap_->clear();
+    */
+	meshSegmentDispObjMap_.clear();
 	
-	SegmentPointerContainer::const_it s_it = segmentPointerContainer_->begin(), s_end = segmentPointerContainer_->end();
-	for(;s_it <> s_end; ++s_it){
+    if(meshSegmentCollectionBase_->isPolyMesh()){
+        refreshDisplayT<PolyMesh>();
+    }
+    else if(meshSegmentCollectionBase_->isTriMesh()){
+        refreshDisplayT<TriMesh>();
+    }
+    else{
+        log(QString("Invalid mesh, unable to refresh display objects."));
+    }
+}
+
+template <typename myMesh> void FirstPlugin::refreshDisplayT(){
+	typedef MeshSegmentCollectionT<myMesh> SegmentContainer;
+    typedef MeshSegmentT<myMesh> Segment;
+    typedef SegmentDescriptorT<myMesh> SegmentDescriptor;
+	SegmentContainer* segmentContainer = (SegmentContainer*)meshSegmentCollectionBase_;
+	typename SegmentContainer::const_iterator sp_it = segmentContainer->begin(), sp_end = segmentContainer->end();
+	for(; sp_it != sp_end; ++sp_it){
+		ObjectHandle objectHandle  = emit signalCreateCube();
+		SegmentHandle segmentHandle = sp_it->first;
+		Segment* segment = sp_it->second;
+		SegmentDescriptor*  segmentDescriptor = segment->segmentDescriptor();
+		meshSegmentDispObjMap_[segmentHandle] = objectHandle;
+		BaseObject* obj = 0;
+		PluginFunctions::getObject(objectHandle, obj);
+		segment->regenerateDescriptor();
+		emit signalTransformObject(objectHandle,segmentDescriptor->worldTransformOF());
 	}
 }
 
-template <typename myMesh> refreshDisplayT(){
-	typedef MeshSegmentCollectionT<myMesh>* SegmentContainer;
-	SegmentContainer* segmentContainer = (SegmentContainer*)meshSegmentCollectionBase_;
-	segmentContainer::const_iterator sp_it = segmentContainer->begin(), sp_end = segmentContainer->end();
-	for(; sp_it != sp_end; ++sp_it){
-		SegmentHandle h  = emit signalCreateCube();
-		meshSegmentDispObjMap_[(sp_it)->handle()] = h;
-		BaseObject* obj = 0;
-		PluginFunctions::getObject(h, obj);
-		emit signalTransformObject(obj,(*sp_it)->segmentDescriptor_.worldTransform());
-	}
-}
+  void FirstPlugin::onClick_buttonSegmentFromMesh(){
+      static int objCount = 0;
+        ++objCount;
+	  log(QString("buttonSegmentFromMesh_ clicked"));
+      //get the file name
+      QString qfilename = QFileDialog::getOpenFileName(0,"Select segmented mesh",QString(),QString("OpenMesh Format Files (*.om)"));
+      std::string filename(qfilename.toUtf8());
+       int id = -1;
+       emit addEmptyObject(DATA_TRIANGLE_MESH,id);
+       TriMeshObject* object(0);
+
+//        TriMeshObject* object(0);
+     if(PluginFunctions::getObject( id, object)) {
+         
+         if ( PluginFunctions::objectCount() == 1 )
+             object->target(true);
+         
+         object->setFromFileName(qfilename);
+         object->setName("bob");
+
+         OpenMesh::IO::Options opt = OpenMesh::IO::Options::Default;
+         opt += OpenMesh::IO::Options::VertexColor;
+
+         //object->mesh()->request_vertex_colors();
+
+         //load file
+         OpenMesh::VPropHandleT<SegmentTypesT<TriMesh>::SegmentHandle> vPropHandle;
+         object->mesh()->add_property(vPropHandle, MeshSegmentT<TriMesh>::defaultVertexPropName());
+         bool ok = OpenMesh::IO::read_mesh( (*(object->mesh())) , filename, opt );
+                 if (!ok)
+         {
+             std::cerr << "Plugin FileOM : Read error for Triangle Mesh\n";
+             emit deleteObject( object->id() );
+             return;
+         }
+
+         object->update();
+
+        //TODO:: fix the fact it's currently only working on TRIMESH objects
+	    //if(object->dataType(DATA_TRIANGLE_MESH)){
+		    //delete meshSegmentCollectionBase_;
+		    MeshSegmentCollectionT<TriMesh>* trimeshSegmentCollection = new MeshSegmentCollectionT<TriMesh>();
+		    trimeshSegmentCollection->test_SegmentInitialiseFromMesh(PluginFunctions::triMesh(object));
+		    meshSegmentCollectionBase_ = trimeshSegmentCollection;
+	    //}else if(object->dataType(DATA_POLY_MESH)){
+		    //delete meshSegmentCollectionBase_;
+		  //  MeshSegmentCollectionT<PolyMesh>* polymeshSegmentCollection = new MeshSegmentCollectionT<PolyMesh>();
+		  //  polymeshSegmentCollection->test_SegmentInitialiseFromMesh(PluginFunctions::polyMesh(object));
+		  //  meshSegmentCollectionBase_ = polymeshSegmentCollection;
+	    //}
+	    refreshCombo();
+   	  emit updatedObject(object->id(), UPDATE_COLOR);
+     }
+  }
+
  Q_EXPORT_PLUGIN2(firstPlugin, FirstPlugin);
 
  /***********************

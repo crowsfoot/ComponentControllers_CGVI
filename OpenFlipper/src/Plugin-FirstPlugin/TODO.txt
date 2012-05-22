@@ -1,0 +1,10 @@
+ const Segment*TODO::
+***********************
+Added 07May2012
+-----------------------
+Making the assumption there will only ever be one mesh object in the scene
+firstPlugin.cc: addSegment: assumes that only one type will ever be on scene, no error handling
+
+
+08May2012
+-----------------------
