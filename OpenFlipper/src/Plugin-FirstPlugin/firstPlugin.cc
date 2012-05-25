@@ -8,6 +8,7 @@
 #include <../ObjectTypes/MeshObject/MeshObjectT.hh>
 #include "OpenFlipper/BasePlugin/PluginFunctions.hh"
 
+#include "MeshSegmentCollectionT.hh"
 
 
 FirstPlugin::FirstPlugin() :  labelStaticText_(0), labelDynamicText_(0),
@@ -322,11 +323,11 @@ void FirstPlugin::onClick_buttonSegmentAdd(){
         
 	    TriMesh* tmesh = PluginFunctions::triMesh(*o_it);
         TriMeshSegmentCollection* tmsc = (TriMeshSegmentCollection*)meshSegmentCollectionBase_;
-	    TriMeshSegment* tms = tmsc->add(tmesh, color);
+	    MeshSegmentT<TriMesh>* tms = tmsc->add(tmesh, color);
     } else if(meshSegmentCollectionBase_->isPolyMesh()){
         PolyMesh* pmesh = PluginFunctions::polyMesh(*o_it);
         PolyMeshSegmentCollection* pmsc = (PolyMeshSegmentCollection*)meshSegmentCollectionBase_;
-	    PolyMeshSegment* pms = pmsc->add(pmesh,color);
+	    MeshSegmentT<PolyMesh>* pms = pmsc->add(pmesh,color);
     }
     
     //refresh the comboBox

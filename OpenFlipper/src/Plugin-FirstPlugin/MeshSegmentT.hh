@@ -29,8 +29,6 @@
 #include "SegmentDescriptor.hh"
 #include "SegmentTypes.hh"
 
-template <typename myMesh> class MeshSegmentT;
-
 ///base class to support segment arrays
 class MeshSegmentBase{
 public:
@@ -107,11 +105,6 @@ protected:
     friend struct OpenMesh::IO::binary<myType>;
     friend struct OpenMesh::IO::binary<SegmentCollection>;
 };
-
-
-//usability typedefs
-typedef MeshSegmentT<PolyMesh> PolyMeshSegment;
-typedef MeshSegmentT<TriMesh> TriMeshSegment;
 
 
 

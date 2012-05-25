@@ -1,3 +1,32 @@
+25 May 2012-David Lane (10:00)
+-------------------------------------------------------
+Added Folder Plugin-ComponentControllers
+Added Files:
+	-ComponentControllers.hh
+		Implementation of features in MeshSegmentT and
+		MeshSegmentCollectionT with an emphasis on making it less
+		confusing
+	-ComponentControllersPlugin.*
+		Header and object files for the GUI implementation of
+		ComponentControllers.hh
+
+
+22 May 2012-David Lane
+--------------------------------------------------------
+Broke Segmenter2.* into MeshSegmentT.* and MeshSegmentCollectionT.*
+Segmenter now keeps colours per vertex for each segment.
+Wrote code to bypass the standard OpenFlipper load/save wrapper functions to
+OpenMesh::IO in order toread in custom mesh properties for storing
+segmentation.
+Added functions for restoring the Segment collections from a property stored with a vertex.
+
+
+11 May 2012
+Finished debugging MeshSegment* template classes.
+Added incomplete routines implementing PCA and best-fit bounding box with the Alglib library.
+Changed storage routine to simpler by-vertex already supported by OpenMesh,
+removing need for the SegmentIO code.
+
 04 May 2012-David Lane
 --------------------------------------------------------
 Initialised repository.

@@ -43,11 +43,13 @@ template <typename myMesh> class MeshSegmentCollectionT : public  MeshSegmentCol
 
 public:
 
+	//************************Typedefs********************************
+
     typedef MeshSegmentCollectionT<myMesh> myType; //self type
 
     //segment types
     typedef typename MeshSegmentT<myMesh> Segment;
-    typedef typename std::map<SegmentHandle, Segment*> SegmentPointerContainer; //TODO: change implementation to use a map
+    typedef typename std::map<SegmentHandle, Segment*> SegmentPointerContainer; 
     typedef typename SegmentPointerContainer::const_iterator const_iterator;
 
     //*****************template base overrides******************************
@@ -102,7 +104,9 @@ protected:
 
 //usability typedefs
 typedef MeshSegmentCollectionT<PolyMesh> PolyMeshSegment;
+typedef MeshSegmentCollectionT<TriMesh> TriMeshSegment;
 typedef MeshSegmentCollectionT<TriMesh> TriMeshSegmentCollection;
+typedef MeshSegmentCollectionT<PolyMesh> PolyMeshSegmentCollection;
 
 
 
